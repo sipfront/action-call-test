@@ -1,9 +1,10 @@
 # Your .github/workflows/run_sipfront_on_pr.yml file.
-# 
+
+name: Run Sipfront Call Test
+
 on:
   push:
-    branches:    
-      - 'test/pr'
+    branches: [ 'test/pr' ]
 
 jobs:
   sipfront-call-test:

@@ -6,12 +6,13 @@ This action executes a Sipfront end-to-end call test.
 
 ### `public_key`
 
-**Required** Your Sipfront API public key, get it from the [Sipfront App](https://app.sipfront.com/subscription/apikey).
-
+**Required** Your Sipfront API public key, get it from the
+[Sipfront App](https://app.sipfront.com/subscription/apikey).
 
 ### `secret_key`
 
-**Required** Your Sipfront API secret key, get it from the [Sipfront App](https://app.sipfront.com/subscription/apikey).
+**Required** Your Sipfront API secret key, get it from the
+[Sipfront App](https://app.sipfront.com/subscription/apikey).
 
 ### `name`
 
@@ -23,14 +24,14 @@ This action executes a Sipfront end-to-end call test.
 
 ### `sf_environment`
 
-**Optional** The Sipfront environment to use. For internal use during development of this action only. Possible values are `prod`, `dev` or `local`.
+**Optional** The Sipfront environment to use. For internal use during
+development of this action only. Possible values are `prod`, `dev` or `local`.
 
 ## Outputs
 
 ### `session_id`
 
 The Sipfront test session ID of the executed test run.
-
 
 ## Example usage
 
