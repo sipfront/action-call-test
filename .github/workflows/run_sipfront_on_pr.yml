@@ -6,7 +6,8 @@ on:
       - 'test/pr'
 
 jobs:
-  sipfront:
+  sipfront-call-test:
+    runs-on: ubuntu-latest
     steps:
 
       # your pre-requisites steps go here to build and deploy your
