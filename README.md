@@ -11,11 +11,11 @@ your tests into your GitHub CI/CD pipeline.
 ## Howto
 
 1. Sign up for an account at [https://app.sipfront.com](https://app.sipfront.com)
-2. Generate an API key on the [web interface](https://app.sipfront.com/subscription/apikey)
-3. Add the public and secret API key as `SIPFRONT_PUBLIC_KEY` and `SIPFRONT_SECRET_KEY`
+1. Generate an API key on the [web interface](https://app.sipfront.com/subscription/apikey)
+1. Add the public and secret API key as `SIPFRONT_PUBLIC_KEY` and `SIPFRONT_SECRET_KEY`
    to your GitHub repository secrets ([instructions](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository))
-4. Create a test on the [web interface](https://app.sipfront.com/)
-5. Add your workflow by using and adapting the following example:
+1. Create a test on the [web interface](https://app.sipfront.com/)
+1. Add your workflow by using and adapting the following example:
 
 ```yaml
 name: Run Sipfront Call Test
