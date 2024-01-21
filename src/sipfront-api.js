@@ -20,7 +20,7 @@ async function run_call_test(
 ) {
   let api_base = 'https://app.sipfront.com'
   const api_path = '/api/v2/tests/run'
-  if (sf_environment !== null) {
+  if (sf_environment !== null && sf_environment.length > 0) {
     if (sf_environment === 'dev') {
       api_base = 'https://app.dev.sipfront.com'
     } else if (sf_environment === 'local') {
@@ -41,7 +41,7 @@ async function run_call_test(
   const data = {
     'test.name': name
   }
-  if (destination !== null) {
+  if (destination !== null && destination.length > 0) {
     data['step.1.0.dial_destination'] = destination
   }
 

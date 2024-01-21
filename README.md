@@ -40,7 +40,7 @@ jobs:
       # Then, trigger the test run:
       - name: Run end-to-end Sipfront call test
         id: testcall
-        uses: sipfront/action-call-test@v0.0.6
+        uses: sipfront/action-call-test@v0.0.7
         with:
           public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY }}'
           secret_key: '${{ secrets.SIPFRONT_SECRET_KEY }}'
@@ -81,7 +81,7 @@ The Sipfront test session ID of the executed test run.
 ## Example usage
 
 ```yaml
-uses: sipfront/action-call-test@v0.0.6
+uses: sipfront/action-call-test@v0.0.7
 with:
   public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY }}'
   secret_key: '${{ secrets.SIPFRONT_SECRET_KEY }}'

@@ -51,7 +51,16 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
-      - name: Run action
+      - name: Run action with defaults
+        id: test-action
+        uses: ./
+        with:
+          public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY }}'
+          secret_key: '${{ secrets.SIPFRONT_SECRET_KEY }}'
+          name: 'sipfront-a-b'
+          sf_environment: 'dev'
+
+      - name: Run action with destination override
         id: test-action
         uses: ./
         with:
