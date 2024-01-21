@@ -14,7 +14,7 @@ jobs:
       # changes to your test system, then:
 
       - name: Run end-to-end Sipfront call test
-        uses: actions/action-run-test@main
+        uses: ./
           with:
             public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY}}'
             secret_key: '${{ secrets.SIPFRONT_SECRET_KEY}}'

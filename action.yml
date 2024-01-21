@@ -1,4 +1,4 @@
-name: 'Sipfront Call Test'
+name: 'sipfront-call-test'
 description: 'Triggers a call test on the Sipfront App'
 author: 'Sipfront GmbH'
 
