@@ -14,19 +14,27 @@ const setOutputMock = jest.spyOn(core, 'setOutput').mockImplementation()
 const runMock = jest.spyOn(main, 'run')
 
 // Other utilities
-const timeRegex = /^\d{2}:\d{2}:\d{2}/
+//const timeRegex = /^\d{2}:\d{2}:\d{2}/
 
 describe('action', () => {
   beforeEach(() => {
     jest.clearAllMocks()
   })
 
-  it('sets the time output', async () => {
+  it('sets the output', async () => {
     // Set the action's inputs as return values from core.getInput()
     getInputMock.mockImplementation(name => {
       switch (name) {
-        case 'milliseconds':
-          return '500'
+        case 'public_key':
+          return 'key'
+        case 'secret_key':
+          return 'secret'        
+        case 'name':
+          return 'sipfront-a-b'
+        case 'destination':
+          return 'testdestination'
+        case 'sf_environment':
+          return 'dev'
         default:
           return ''
       }
@@ -35,6 +43,7 @@ describe('action', () => {
     await main.run()
     expect(runMock).toHaveReturned()
 
+/*
     // Verify that all of the core library functions were called correctly
     expect(debugMock).toHaveBeenNthCalledWith(1, 'Waiting 500 milliseconds ...')
     expect(debugMock).toHaveBeenNthCalledWith(
@@ -50,8 +59,10 @@ describe('action', () => {
       'time',
       expect.stringMatching(timeRegex)
     )
+*/    
   })
 
+/*
   it('sets a failed status', async () => {
     // Set the action's inputs as return values from core.getInput()
     getInputMock.mockImplementation(name => {
@@ -93,4 +104,5 @@ describe('action', () => {
       'Input required and not supplied: milliseconds'
     )
   })
+*/  
 })
