@@ -11,10 +11,10 @@ your tests into your GitHub CI/CD pipeline.
 ## Howto
 
 1. Sign up for an account at [https://app.sipfront.com](https://app.sipfront.com)
-1. Generate an API key on the [web interface](https://app.sipfront.com/subscription/apikey)
+1. Generate an API key on the [API section](https://app.sipfront.com/subscription/apikey) of the web interface
 1. Add the public and secret API key as `SIPFRONT_PUBLIC_KEY` and `SIPFRONT_SECRET_KEY`
-   to your GitHub repository secrets ([instructions](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository))
-1. Create a test on the [web interface](https://app.sipfront.com/)
+   to your GitHub repository secrets ([instructions](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions#creating-secrets-for-a-repository))
+1. Create a test on the [Sipfront web interface](https://app.sipfront.com/)
 1. Add your workflow by using and adapting the following example:
 
 ```yaml
@@ -37,13 +37,11 @@ jobs:
       # Then, trigger the test run:
       - name: Run end-to-end Sipfront call test
         id: testcall
-        uses: sipfront/action-call-test@v0.0.4
+        uses: sipfront/action-call-test@v0.0.5
         with:
           public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY }}'
           secret_key: '${{ secrets.SIPFRONT_SECRET_KEY }}'
-          name: 'sipfront-a-b'
-          destination: '439992002'
-          sf_environment: 'dev'
+          name: 'basic-call-a-b'
 
       # You can also print the test session id used in the call test
       - name: Print Output
@@ -80,9 +78,9 @@ The Sipfront test session ID of the executed test run.
 ## Example usage
 
 ```yaml
-uses: sipfront/action-call-test@v0.0.4
+uses: sipfront/action-call-test@v0.0.5
 with:
   public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY }}'
   secret_key: '${{ secrets.SIPFRONT_SECRET_KEY }}'
-  name: 'sipfront-a-b'
+  name: 'basic-call-a-b'
 ```
