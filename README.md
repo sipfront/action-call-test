@@ -1,19 +1,19 @@
-# `sipfront/action-call-test` Github Workflow Action
+# `sipfront/action-call-test` GitHub Workflow Action
 
 Sipfront is a test automation platform for telecom tests.
-It is hosted at [https://app.sipfront.com](https://app.sipfront.com), and you find more information
-on our [website](https://sipfront.com).
+It is hosted at [https://app.sipfront.com](https://app.sipfront.com),
+and you can find more information on our [homepage](https://sipfront.com).
 
 This action executes an end-to-end call test, which you pre-define on the
 [Sipfront SaaS platform](https://app.sipfront.com), to allow you to fully integrate
-your tests into your Github CI/CD pipeline.
+your tests into your GitHub CI/CD pipeline.
 
 ## Howto
 
 1. Sign up for an account at [https://app.sipfront.com](https://app.sipfront.com)
 2. Generate an API key on the [web interface](https://app.sipfront.com/subscription/apikey)
 3. Add the public and secret API key as `SIPFRONT_PUBLIC_KEY` and `SIPFRONT_SECRET_KEY`
-   to your Github repository secrets ([instructions](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository))
+   to your GitHub repository secrets ([instructions](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository))
 4. Create a test on the [web interface](https://app.sipfront.com/)
 5. Add your workflow by using and adapting the following example:
 
