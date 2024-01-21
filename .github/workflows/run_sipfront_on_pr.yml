@@ -1,8 +1,7 @@
 # Your .github/workflows/run_sipfront_on_pr.yml file.
 # 
 on:
-#     description: 'The width of the output image'
-    # Sequence of patterns matched against refs/heads
+  push:
     branches:    
       - 'test/pr'
 
@@ -15,9 +14,9 @@ jobs:
 
       - name: Run end-to-end Sipfront call test
         uses: ./
-          with:
-            public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY}}'
-            secret_key: '${{ secrets.SIPFRONT_SECRET_KEY}}'
-            name: 'sipfront-a-b'
-            destination: '439992002'
-            sf_environment: 'dev'
+        with:
+          public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY}}'
+          secret_key: '${{ secrets.SIPFRONT_SECRET_KEY}}'
+          name: 'sipfront-a-b'
+          destination: '439992002'
+          sf_environment: 'dev'
