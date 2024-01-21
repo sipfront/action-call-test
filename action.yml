@@ -1,18 +1,26 @@
-name: 'The name of your action here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Sipfront Call Test'
+description: 'Triggers a call test on the Sipfront App'
+author: 'Sipfront GmbH'
 
 # Define your inputs here.
 inputs:
-  milliseconds:
-    description: 'Your input description here'
+  public_key:
+    description: 'Your Sipfront API public key'
     required: true
-    default: '1000'
+  secret_key:
+    description: 'Your Sipfront API secret key'
+    required: true
+  name:
+    description: 'Your Sipfront test name to trigger'
+    required: true
+  destination:
+    description: 'The destination to call, overriding the test configuration'
+    required: false
 
 # Define your outputs here.
 outputs:
-  time:
-    description: 'Your output description here'
+  test:
+    description: 'TODO our output'
 
 runs:
   using: node20
