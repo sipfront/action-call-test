@@ -1,6 +1,55 @@
-# sipfront-call-test Action
+# `sipfront/action-call-test` Github Workflow Action
 
-This action executes a Sipfront end-to-end call test.
+Sipfront is a test automation platform for telecom tests.
+It is hosted at [https://app.sipfront.com](https://app.sipfront.com), and you find more information
+on our [website](https://sipfront.com).
+
+This action executes an end-to-end call test, which you pre-define on the
+[Sipfront SaaS platform](https://app.sipfront.com), to allow you to fully integrate
+your tests into your Github CI/CD pipeline.
+
+## Howto
+
+1. Sign up for an account at [https://app.sipfront.com](https://app.sipfront.com)
+2. Generate an API key on the [web interface](https://app.sipfront.com/subscription/apikey)
+3. Add the public and secret API key as `SIPFRONT_PUBLIC_KEY` and `SIPFRONT_SECRET_KEY`
+   to your Github repository secrets ([instructions](https://docs.github.com/en/actions/reference/encrypted-secrets#creating-encrypted-secrets-for-a-repository))
+4. Create a test on the [web interface](https://app.sipfront.com/)
+5. Add your workflow by using and adapting the following example:
+
+```yaml
+name: Run Sipfront Call Test
+
+on: [ pull_request ]
+
+jobs:
+  sipfront-call-test:
+    name: Test end-to-end call on Sipfront
+    runs-on: ubuntu-latest
+    steps:
+
+      # Your pre-requisites steps go here to checkout, build and deploy
+      # your changes to your test system, such as:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v3
+
+      # Then, trigger the test run:
+      - name: Run end-to-end Sipfront call test
+        id: testcall
+        uses: sipfront/action-call-test@v0.0.4
+        with:
+          public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY }}'
+          secret_key: '${{ secrets.SIPFRONT_SECRET_KEY }}'
+          name: 'sipfront-a-b'
+          destination: '439992002'
+          sf_environment: 'dev'
+
+      # You can also print the test session id used in the call test
+      - name: Print Output
+        id: output
+        run: echo "${{ steps.testcall.outputs.session_id }}"
+```
 
 ## Inputs
 
@@ -22,11 +71,6 @@ This action executes a Sipfront end-to-end call test.
 
 **Optional** The destination to call, overriding the test configuration.
 
-### `sf_environment`
-
-**Optional** The Sipfront environment to use. For internal use during
-development of this action only. Possible values are `prod`, `dev` or `local`.
-
 ## Outputs
 
 ### `session_id`
@@ -36,10 +80,9 @@ The Sipfront test session ID of the executed test run.
 ## Example usage
 
 ```yaml
-uses: actions/sipfront-call-test@v0.0.1
+uses: sipfront/action-call-test@v0.0.4
 with:
   public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY }}'
   secret_key: '${{ secrets.SIPFRONT_SECRET_KEY }}'
   name: 'sipfront-a-b'
-  destination: '439992002'
 ```
