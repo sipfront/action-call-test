@@ -55,8 +55,8 @@ jobs:
         id: test-action
         uses: ./
         with:
-          public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY}}'
-          secret_key: '${{ secrets.SIPFRONT_SECRET_KEY}}'
+          public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY }}'
+          secret_key: '${{ secrets.SIPFRONT_SECRET_KEY }}'
           name: 'sipfront-a-b'
           destination: '439992002'
           sf_environment: 'dev'

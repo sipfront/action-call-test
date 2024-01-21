@@ -37,8 +37,8 @@ The Sipfront test session id of the executed test run.
 ```yaml
 uses: actions/sipfront-call-test@v0.0.1
 with:
-  public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY}}'
-  secret_key: '${{ secrets.SIPFRONT_SECRET_KEY}}'
+  public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY }}'
+  secret_key: '${{ secrets.SIPFRONT_SECRET_KEY }}'
   name: 'sipfront-a-b'
   destination: '439992002'
   sf_environment: 'dev'
