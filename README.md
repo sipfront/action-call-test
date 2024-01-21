@@ -41,5 +41,4 @@ with:
   secret_key: '${{ secrets.SIPFRONT_SECRET_KEY }}'
   name: 'sipfront-a-b'
   destination: '439992002'
-  sf_environment: 'dev'
 ```
