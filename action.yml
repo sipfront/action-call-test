@@ -16,6 +16,9 @@ inputs:
   destination:
     description: 'The destination to call, overriding the test configuration'
     required: false
+  sf_environment:
+    description: 'Internal parameter for testing this action'
+    required: false    
 
 # Define your outputs here.
 outputs:

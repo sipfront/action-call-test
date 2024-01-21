@@ -7,6 +7,7 @@ on:
 
 jobs:
   sipfront-call-test:
+    name: Test end-to-end call on Sipfront
     runs-on: ubuntu-latest
     steps:
 
