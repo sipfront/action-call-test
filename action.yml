@@ -19,8 +19,8 @@ inputs:
 
 # Define your outputs here.
 outputs:
-  test:
-    description: 'TODO our output'
+  session_id:
+    description: 'The Sipfront session id used for the test run'
 
 runs:
   using: node20

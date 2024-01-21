@@ -28,7 +28,7 @@ describe('action', () => {
         case 'public_key':
           return 'key'
         case 'secret_key':
-          return 'secret'        
+          return 'secret'
         case 'name':
           return 'sipfront-a-b'
         case 'destination':
@@ -43,7 +43,7 @@ describe('action', () => {
     await main.run()
     expect(runMock).toHaveReturned()
 
-/*
+    /*
     // Verify that all of the core library functions were called correctly
     expect(debugMock).toHaveBeenNthCalledWith(1, 'Waiting 500 milliseconds ...')
     expect(debugMock).toHaveBeenNthCalledWith(
@@ -59,10 +59,10 @@ describe('action', () => {
       'time',
       expect.stringMatching(timeRegex)
     )
-*/    
+*/
   })
 
-/*
+  /*
   it('sets a failed status', async () => {
     // Set the action's inputs as return values from core.getInput()
     getInputMock.mockImplementation(name => {
@@ -104,5 +104,5 @@ describe('action', () => {
       'Input required and not supplied: milliseconds'
     )
   })
-*/  
+*/
 })

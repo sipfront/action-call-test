@@ -23,7 +23,13 @@ async function run() {
     }
     core.debug(deb_log)
 
-    let res = await run_call_test(public_key, secret_keym, name, destination, sf_environment)
+    const res = await run_call_test(
+      public_key,
+      secret_key,
+      name,
+      destination,
+      sf_environment
+    )
     core.debug(res)
 
     core.setOutput('session_id', res.session_id)
