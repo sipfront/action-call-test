@@ -29,7 +29,7 @@ This action executes a Sipfront end-to-end call test.
 
 ### `session_id`
 
-The Sipfront test session id of the executed test run.
+The Sipfront test session ID of the executed test run.
 
 
 ## Example usage
