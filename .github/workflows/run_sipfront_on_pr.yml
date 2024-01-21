@@ -10,10 +10,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-      # your pre-requisites steps go here to build and deploy your
-      # changes to your test system, then:
+      # Your pre-requisites steps go here to build and deploy your
+      # changes to your test system, such as:
+    - name: Checkout
+      id: checkout
+      uses: actions/checkout@v3
 
+      # Then, trigger the test run:
       - name: Run end-to-end Sipfront call test
+        id: testcall
         uses: ./
         with:
           public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY}}'
@@ -21,3 +26,8 @@ jobs:
           name: 'sipfront-a-b'
           destination: '439992002'
           sf_environment: 'dev'
+
+      # You can also print the test session id used in the call test
+      - name: Print Output
+        id: output
+        run: echo "${{ steps.testcall.outputs.session_id }}"          
