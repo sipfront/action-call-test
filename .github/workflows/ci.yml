@@ -51,12 +51,16 @@ jobs:
         id: checkout
         uses: actions/checkout@v4
 
-      - name: Test Local Action
+      - name: Run action
         id: test-action
         uses: ./
         with:
-          milliseconds: 1000
+          public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY}}'
+          secret_key: '${{ secrets.SIPFRONT_SECRET_KEY}}'
+          name: 'sipfront-a-b'
+          destination: '439992002'
+          sf_environment: 'dev'
 
       - name: Print Output
         id: output
-        run: echo "${{ steps.test-action.outputs.time }}"
+        run: echo "${{ steps.test-action.outputs.session_id }}"
