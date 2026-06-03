@@ -1,5 +1,5 @@
 name: 'sipfront-call-test'
-description: 'Triggers a call test on the Sipfront App'
+description: 'Triggers a call test or project run on the Sipfront App'
 author: 'Sipfront GmbH'
 branding:
   icon: 'phone-call'
@@ -13,21 +13,31 @@ inputs:
   secret_key:
     description: 'Your Sipfront API secret key'
     required: true
+  mode:
+    description: "What to run: 'test' (a single test) or 'project' (a whole project)"
+    required: false
+    default: 'test'
   name:
-    description: 'Your Sipfront test name to trigger'
-    required: true
+    description: 'Your Sipfront test name to trigger (required when mode=test)'
+    required: false
   destination:
-    description: 'The destination to call, overriding the test configuration'
+    description: 'The destination to call, overriding the test configuration (mode=test)'
+    required: false
+  project_id:
+    description: 'The id of the project to run (required when mode=project)'
+    required: false
+  test_ids:
+    description: 'Comma-separated subset of test ids to run (mode=project, optional)'
     required: false
   report_mode:
-    description: "Report rendering mode: 'full', 'kiosk' or 'print'"
+    description: "Report rendering mode. mode=test: 'full', 'kiosk' or 'print'. mode=project: 'full' or 'kiosk'"
     required: false
   poll_interval:
-    description: 'Seconds to wait between test status polls'
+    description: 'Seconds to wait between status polls'
     required: false
     default: '3'
   timeout:
-    description: 'Maximum seconds to wait for the test to finish (0 disables)'
+    description: 'Maximum seconds to wait for the run to finish (0 disables)'
     required: false
     default: '1800'
   sf_environment:
@@ -36,32 +46,43 @@ inputs:
 
 # Define your outputs here.
 outputs:
+  # Common outputs (set in both modes)
+  status:
+    description: "Final status: test mode 'passed'/'failed'/'running'; project mode 'passed'/'failed'/'stopped'/'running'"
+  report_url:
+    description: 'URL of the test session or project run report'
+  project_id:
+    description: 'The id of the project the test or project run belongs to'
+  started_at:
+    description: 'Timestamp when the run started (UTC)'
+  stopped_at:
+    description: 'Timestamp when the run stopped (UTC)'
+  # Single-test outputs (mode=test)
   session_id:
     description: 'The Sipfront session id used for the test run'
-  status:
-    description: "Final session status: 'passed', 'failed' or 'running'"
   result_description:
     description: 'Human-readable description of the test result'
-  report_url:
-    description: 'URL of the test session report'
   test_id:
     description: 'The id of the executed test'
   test_name:
     description: 'The name of the executed test'
-  project_id:
-    description: 'The id of the project the test belongs to'
   project_name:
     description: 'The name of the project the test belongs to'
   testcase_name:
     description: 'The name of the test case (scenario) that was executed'
   agentpool_name:
     description: 'The name of the agent pool that ran the test'
-  started_at:
-    description: 'Timestamp when the test session started (UTC)'
-  stopped_at:
-    description: 'Timestamp when the test session stopped (UTC)'
   tags:
     description: 'JSON-encoded tags associated with the test session'
+  # Project-run outputs (mode=project)
+  project_run_id:
+    description: 'The numeric id of the project run'
+  project_run_uuid:
+    description: 'The uuid of the project run'
+  total_tests:
+    description: 'Total number of tests in the project run'
+  tests_started:
+    description: 'Number of tests that were started in the project run'
 
 runs:
   using: node20

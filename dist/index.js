@@ -24727,60 +24727,146 @@ function int_input(name, fallback) {
 }
 
 /**
+ * Parse a comma-separated list of integer ids.
+ * @param {string} name The input name.
+ * @returns {number[]} The parsed ids (empty if the input is unset).
+ */
+function id_list_input(name) {
+  const raw = core.getInput(name, { required: false })
+  if (!raw || raw.length === 0) {
+    return []
+  }
+  return raw
+    .split(',')
+    .map(s => s.trim())
+    .filter(s => s.length > 0)
+    .map(s => {
+      const val = parseInt(s, 10)
+      if (Number.isNaN(val) || val < 0) {
+        throw new Error(`Invalid id '${s}' in input '${name}'`)
+      }
+      return val
+    })
+}
+
+/**
+ * Handle a single-test run: dispatch, then set the test-specific outputs.
+ * @param {object} common Inputs shared across both modes.
+ * @returns {Promise<void>} Resolves once outputs are set.
+ */
+async function run_test_mode(common) {
+  const name = core.getInput('name', { required: true })
+  const destination = core.getInput('destination', { required: false })
+
+  let msg = `Running test '${name}'`
+  if (destination) {
+    msg += ` to destination '${destination}'`
+  }
+  if (common.sf_environment) {
+    msg += ` in environment '${common.sf_environment}'`
+  }
+  core.debug(msg)
+
+  const result = await api.run_call_test(
+    common.public_key,
+    common.secret_key,
+    name,
+    destination,
+    common.report_mode,
+    common.sf_environment,
+    common.poll_interval,
+    common.timeout
+  )
+
+  core.setOutput('session_id', result.session_id)
+  core.setOutput('status', result.status || result.session_status)
+  core.setOutput('result_description', result.result_description || '')
+  core.setOutput('report_url', result.report_url || '')
+  core.setOutput('test_id', result.test_id)
+  core.setOutput('test_name', result.test_name)
+  core.setOutput('project_id', result.project_id)
+  core.setOutput('project_name', result.project_name)
+  core.setOutput('testcase_name', result.testcase_name)
+  core.setOutput('agentpool_name', result.agentpool_name)
+  core.setOutput('started_at', result.started_at)
+  core.setOutput('stopped_at', result.stopped_at)
+  core.setOutput('tags', JSON.stringify(result.tags || []))
+
+  if (result.session_status === 'failed') {
+    core.setFailed(result.result_description || 'Test run failed')
+  }
+}
+
+/**
+ * Handle a project run: dispatch, then set the project-specific outputs.
+ * @param {object} common Inputs shared across both modes.
+ * @returns {Promise<void>} Resolves once outputs are set.
+ */
+async function run_project_mode(common) {
+  const project_id = core.getInput('project_id', { required: true })
+  const test_ids = id_list_input('test_ids')
+
+  let msg = `Running project '${project_id}'`
+  if (test_ids.length) {
+    msg += ` (tests ${test_ids.join(',')})`
+  }
+  if (common.sf_environment) {
+    msg += ` in environment '${common.sf_environment}'`
+  }
+  core.debug(msg)
+
+  const result = await api.run_project(
+    common.public_key,
+    common.secret_key,
+    project_id,
+    test_ids,
+    common.report_mode,
+    common.sf_environment,
+    common.poll_interval,
+    common.timeout
+  )
+
+  core.setOutput('project_run_id', result.project_run_id)
+  core.setOutput('project_run_uuid', result.project_run_uuid)
+  core.setOutput('status', result.run_status)
+  core.setOutput('report_url', result.report_url || '')
+  core.setOutput('project_id', result.project_id)
+  core.setOutput('total_tests', result.total_tests)
+  core.setOutput('tests_started', result.tests_started)
+  core.setOutput('started_at', result.created_at)
+  core.setOutput('stopped_at', result.stopped_at)
+
+  if (result.run_status === 'failed' || result.run_status === 'stopped') {
+    core.setFailed(`Project run ${result.run_status}`)
+  }
+}
+
+/**
  * The main function for the action.
  * @returns {Promise<void>} Resolves when the action is complete.
  */
 async function run() {
   try {
-    const public_key = core.getInput('public_key', { required: true })
-    const secret_key = core.getInput('secret_key', { required: true })
-    const name = core.getInput('name', { required: true })
-    const destination = core.getInput('destination', { required: false })
-    const report_mode = core.getInput('report_mode', { required: false })
-    const sf_environment = core.getInput('sf_environment', { required: false })
-    const poll_interval = int_input('poll_interval', 3)
-    const timeout = int_input('timeout', 1800)
-
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    let deb_log = `Running test '${name}'`
-    if (destination) {
-      deb_log += ` to destination '${destination}'`
+    const mode = (core.getInput('mode', { required: false }) || 'test')
+      .trim()
+      .toLowerCase()
+    if (mode !== 'test' && mode !== 'project') {
+      throw new Error(`Invalid value for input 'mode': '${mode}'`)
     }
-    if (sf_environment) {
-      deb_log += ` in environment '${sf_environment}'`
+
+    const common = {
+      public_key: core.getInput('public_key', { required: true }),
+      secret_key: core.getInput('secret_key', { required: true }),
+      report_mode: core.getInput('report_mode', { required: false }),
+      sf_environment: core.getInput('sf_environment', { required: false }),
+      poll_interval: int_input('poll_interval', 3),
+      timeout: int_input('timeout', 1800)
     }
-    core.debug(deb_log)
 
-    const result = await api.run_call_test(
-      public_key,
-      secret_key,
-      name,
-      destination,
-      report_mode,
-      sf_environment,
-      poll_interval,
-      timeout
-    )
-
-    // Expose the full set of run details as action outputs.
-    core.setOutput('session_id', result.session_id)
-    core.setOutput('status', result.status || result.session_status)
-    core.setOutput('result_description', result.result_description || '')
-    core.setOutput('report_url', result.report_url || '')
-    core.setOutput('test_id', result.test_id)
-    core.setOutput('test_name', result.test_name)
-    core.setOutput('project_id', result.project_id)
-    core.setOutput('project_name', result.project_name)
-    core.setOutput('testcase_name', result.testcase_name)
-    core.setOutput('agentpool_name', result.agentpool_name)
-    core.setOutput('started_at', result.started_at)
-    core.setOutput('stopped_at', result.stopped_at)
-    core.setOutput('tags', JSON.stringify(result.tags || []))
-
-    // Fail the workflow run if the test session did not pass, but only after
-    // the outputs above have been set so the report URL is still available.
-    if (result.session_status === 'failed') {
-      core.setFailed(result.result_description || 'Test run failed')
+    if (mode === 'project') {
+      await run_project_mode(common)
+    } else {
+      await run_test_mode(common)
     }
   } catch (error) {
     // Fail the workflow run if an error occurs
@@ -24836,7 +24922,93 @@ function api_error_message(response, fallback) {
 }
 
 /**
- * Run a Sipfront test and wait for completion.
+ * Build an authenticated Sipfront HTTP client.
+ *
+ * @param {string} public_key The public API key.
+ * @param {string} secret_key The secret API key.
+ * @returns {httpm.HttpClient} A configured HTTP client.
+ */
+function make_client(public_key, secret_key) {
+  const api_creds = new httpm_auth.BasicCredentialHandler(
+    public_key,
+    secret_key
+  )
+  return new httpm.HttpClient(
+    'sipfront-gh-client', // user-agent
+    [api_creds], // handlers
+    { keepAlive: true } // request options
+  )
+}
+
+/**
+ * Throw if an HTTP response is not a 2xx, using the API error message.
+ *
+ * @param {object} response The parsed response.
+ * @param {string} what Short description of the operation for the fallback.
+ */
+function assert_ok(response, what) {
+  if (response.statusCode < 200 || response.statusCode >= 300) {
+    throw new Error(
+      api_error_message(response, `${what} (HTTP ${response.statusCode})`)
+    )
+  }
+}
+
+/**
+ * Poll a status URL until the run is no longer 'running'.
+ *
+ * @param {httpm.HttpClient} httpc The HTTP client.
+ * @param {string} status_url The URL to poll.
+ * @param {string} status_field Field on the run object holding the status.
+ * @param {number} poll_interval Seconds between polls.
+ * @param {number} timeout Maximum seconds to wait (0 disables).
+ * @returns {Promise<object>} The final run object.
+ */
+async function poll_status(
+  httpc,
+  status_url,
+  status_field,
+  poll_interval,
+  timeout
+) {
+  const interval_ms = poll_interval * 1000
+  const deadline = timeout > 0 ? Date.now() + timeout * 1000 : null
+
+  let run = null
+  do {
+    if (deadline !== null && Date.now() >= deadline) {
+      throw new Error(
+        `Timed out after ${timeout}s waiting for the run to finish`
+      )
+    }
+
+    const res = await httpc.getJson(status_url)
+    core.debug(JSON.stringify(res))
+    assert_ok(res, 'Failed to fetch status')
+
+    if (!res.result || !res.result.run) {
+      throw new Error(
+        api_error_message(
+          res,
+          'Unexpected response from Sipfront API: missing run status'
+        )
+      )
+    }
+
+    run = res.result.run
+    if (run[status_field] !== 'running') {
+      break
+    }
+
+    await new Promise(r => setTimeout(r, interval_ms))
+    // eslint-disable-next-line no-constant-condition
+  } while (true)
+
+  return run
+}
+
+/**
+ * Run a single Sipfront test and wait for completion.
  *
  * @param {string} public_key The public API key for the Sipfront API.
  * @param {string} secret_key The secret API key for the Sipfront API.
@@ -24860,17 +25032,7 @@ async function run_call_test(
   timeout
 ) {
   const api_base = api_base_for(sf_environment)
-  const api_path = '/api/v2/tests/run'
-
-  const api_creds = new httpm_auth.BasicCredentialHandler(
-    public_key,
-    secret_key
-  )
-  const httpc = new httpm.HttpClient(
-    'sipfront-gh-client', // user-agent
-    [api_creds], // handlers
-    { keepAlive: true } // request options
-  )
+  const httpc = make_client(public_key, secret_key)
 
   const data = {
     'test.name': name
@@ -24882,17 +25044,10 @@ async function run_call_test(
     data['report.mode'] = report_mode
   }
 
-  const sf_res = await httpc.postJson(api_base + api_path, data)
+  const sf_res = await httpc.postJson(`${api_base}/api/v2/tests/run`, data)
   core.debug(JSON.stringify(sf_res))
+  assert_ok(sf_res, 'Failed to trigger test run')
 
-  if (sf_res.statusCode < 200 || sf_res.statusCode >= 300) {
-    throw new Error(
-      api_error_message(
-        sf_res,
-        `Failed to trigger test run (HTTP ${sf_res.statusCode})`
-      )
-    )
-  }
   if (!sf_res.result || !sf_res.result.data || !sf_res.result.data.status_url) {
     throw new Error(
       api_error_message(
@@ -24902,55 +25057,83 @@ async function run_call_test(
     )
   }
 
-  const status_url = sf_res.result.data.status_url
-  const report_url = sf_res.result.data.report_url
-
-  const interval_ms = poll_interval * 1000
-  const deadline = timeout > 0 ? Date.now() + timeout * 1000 : null
-
-  let run = null
-  do {
-    if (deadline !== null && Date.now() >= deadline) {
-      throw new Error(
-        `Timed out after ${timeout}s waiting for test session to finish`
-      )
-    }
-
-    const res = await httpc.getJson(status_url)
-    core.debug(JSON.stringify(res))
-
-    if (res.statusCode < 200 || res.statusCode >= 300) {
-      throw new Error(
-        api_error_message(
-          res,
-          `Failed to fetch test status (HTTP ${res.statusCode})`
-        )
-      )
-    }
-    if (!res.result || !res.result.run) {
-      throw new Error(
-        api_error_message(
-          res,
-          'Unexpected response from Sipfront API: missing run status'
-        )
-      )
-    }
-
-    run = res.result.run
-    if (run.session_status !== 'running') {
-      break
-    }
-
-    await new Promise(r => setTimeout(r, interval_ms))
-    // eslint-disable-next-line no-constant-condition
-  } while (true)
-
-  run.report_url = report_url
+  const run = await poll_status(
+    httpc,
+    sf_res.result.data.status_url,
+    'session_status',
+    poll_interval,
+    timeout
+  )
+  run.report_url = sf_res.result.data.report_url
 
   return run
 }
 
-module.exports = { run_call_test }
+/**
+ * Run a whole Sipfront project and wait for completion.
+ *
+ * @param {string} public_key The public API key for the Sipfront API.
+ * @param {string} secret_key The secret API key for the Sipfront API.
+ * @param {string} project_id The id of the project to run.
+ * @param {number[]} test_ids Optional subset of test ids to run.
+ * @param {string} report_mode Optional report mode ('full' or 'kiosk').
+ * @param {string} sf_environment Internal environment selector for testing.
+ * @param {number} poll_interval Seconds to wait between status polls.
+ * @param {number} timeout Maximum seconds to wait for the run to finish.
+ * @returns {Promise<object>} Resolves with the finished project run object,
+ *   augmented with `report_url`, `project_run_id` and `project_run_uuid`.
+ */
+async function run_project(
+  public_key,
+  secret_key,
+  project_id,
+  test_ids,
+  report_mode,
+  sf_environment,
+  poll_interval,
+  timeout
+) {
+  const api_base = api_base_for(sf_environment)
+  const httpc = make_client(public_key, secret_key)
+
+  const data = {
+    id: Number(project_id)
+  }
+  if (report_mode && report_mode.length > 0) {
+    data['report.mode'] = report_mode
+  }
+  if (Array.isArray(test_ids) && test_ids.length > 0) {
+    data.test_ids = test_ids
+  }
+
+  const sf_res = await httpc.postJson(`${api_base}/api/v2/projects/run`, data)
+  core.debug(JSON.stringify(sf_res))
+  assert_ok(sf_res, 'Failed to trigger project run')
+
+  if (!sf_res.result || !sf_res.result.data || !sf_res.result.data.status_url) {
+    throw new Error(
+      api_error_message(
+        sf_res,
+        'Unexpected response from Sipfront API: missing status URL'
+      )
+    )
+  }
+
+  const run = await poll_status(
+    httpc,
+    sf_res.result.data.status_url,
+    'run_status',
+    poll_interval,
+    timeout
+  )
+  run.report_url = sf_res.result.data.report_url
+  run.project_run_id = sf_res.result.data.project_run_id
+  run.project_run_uuid = sf_res.result.data.project_run_uuid
+
+  return run
+}
+
+module.exports = { run_call_test, run_project }
 
 
 /***/ }),

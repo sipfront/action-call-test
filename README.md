@@ -4,9 +4,12 @@ Sipfront is a test automation platform for telecom tests.
 It is hosted at [https://app.sipfront.com](https://app.sipfront.com),
 and you can find more information on our [homepage](https://sipfront.com).
 
-This action executes an end-to-end call test, which you pre-define on the
+This action executes either a single end-to-end call test or a whole project
+run, which you pre-define on the
 [Sipfront SaaS platform](https://app.sipfront.com), to allow you to
-fully integrate your tests into your GitHub CI/CD pipeline.
+fully integrate your tests into your GitHub CI/CD pipeline. Use the `mode`
+input to choose between running a single `test` (default) or a whole
+`project`.
 
 ## Howto
 
@@ -55,6 +58,28 @@ jobs:
           echo "Report:  ${{ steps.testcall.outputs.report_url }}"
 ```
 
+To run a whole project instead of a single test, set `mode: project` and pass
+a `project_id`:
+
+```yaml
+      - name: Run a whole Sipfront project
+        id: projectrun
+        uses: sipfront/action-call-test@v0.0.7
+        with:
+          public_key: '${{ secrets.SIPFRONT_PUBLIC_KEY }}'
+          secret_key: '${{ secrets.SIPFRONT_SECRET_KEY }}'
+          mode: 'project'
+          project_id: '42'
+          # Optional: only run a subset of the project's tests
+          # test_ids: '101,102,103'
+
+      - name: Print project run report
+        run: |
+          echo "Status: ${{ steps.projectrun.outputs.status }}"
+          echo "Report: ${{ steps.projectrun.outputs.report_url }}"
+          echo "Tests:  ${{ steps.projectrun.outputs.total_tests }}"
+```
+
 ## Inputs
 
 ### `public_key`
@@ -67,25 +92,41 @@ jobs:
 **Required** Your Sipfront API secret key, get it from the
 [Sipfront App](https://app.sipfront.com/subscription/apikey).
 
+### `mode`
+
+**Optional** What to run: `test` (a single test, the default) or `project`
+(a whole project).
+
 ### `name`
 
-**Required** Your Sipfront test name to trigger.
+**Required for `mode=test`** Your Sipfront test name to trigger.
 
 ### `destination`
 
-**Optional** The destination to call, overriding the test configuration.
+**Optional (`mode=test`)** The destination to call, overriding the test
+configuration.
+
+### `project_id`
+
+**Required for `mode=project`** The id of the project to run.
+
+### `test_ids`
+
+**Optional (`mode=project`)** Comma-separated subset of test ids to run from
+the project (e.g. `101,102,103`). If omitted, all tests in the project run.
 
 ### `report_mode`
 
-**Optional** Report rendering mode, one of `full`, `kiosk` or `print`.
+**Optional** Report rendering mode. For `mode=test`: one of `full`, `kiosk` or
+`print`. For `mode=project`: `full` or `kiosk`.
 
 ### `poll_interval`
 
-**Optional** Seconds to wait between test status polls. Defaults to `3`.
+**Optional** Seconds to wait between status polls. Defaults to `3`.
 
 ### `timeout`
 
-**Optional** Maximum seconds to wait for the test to finish before the action
+**Optional** Maximum seconds to wait for the run to finish before the action
 fails. Set to `0` to disable. Defaults to `1800` (30 minutes).
 
 ## Outputs
@@ -93,45 +134,31 @@ fails. Set to `0` to disable. Defaults to `1800` (30 minutes).
 All outputs are populated once the run finishes, including for failed runs, so
 you can always link to the report.
 
-### `session_id`
+### Common (both modes)
 
-The Sipfront test session ID of the executed test run.
+- **`status`** — final status. `mode=test`: `passed`/`failed`/`running`.
+  `mode=project`: `passed`/`failed`/`stopped`/`running`.
+- **`report_url`** — URL of the test session or project run report.
+- **`project_id`** — id of the project the run belongs to.
+- **`started_at` / `stopped_at`** — timestamps (UTC) when the run started and
+  stopped.
 
-### `status`
+### Single test (`mode=test`)
 
-The final session status: `passed`, `failed` or `running`.
+- **`session_id`** — the Sipfront test session id of the executed test run.
+- **`result_description`** — human-readable description of the test result.
+- **`test_id` / `test_name`** — id and name of the executed test.
+- **`project_name`** — name of the project the test belongs to.
+- **`testcase_name`** — name of the test case (scenario) executed.
+- **`agentpool_name`** — name of the agent pool that ran the test.
+- **`tags`** — JSON-encoded tags associated with the test session.
 
-### `result_description`
+### Project run (`mode=project`)
 
-A human-readable description of the test result.
-
-### `report_url`
-
-The URL of the test session report on the Sipfront App.
-
-### `test_id` / `test_name`
-
-The id and name of the executed test.
-
-### `project_id` / `project_name`
-
-The id and name of the project the test belongs to.
-
-### `testcase_name`
-
-The name of the test case (scenario) that was executed.
-
-### `agentpool_name`
-
-The name of the agent pool that ran the test.
-
-### `started_at` / `stopped_at`
-
-Timestamps (UTC) when the test session started and stopped.
-
-### `tags`
-
-JSON-encoded tags associated with the test session.
+- **`project_run_id`** — numeric id of the project run.
+- **`project_run_uuid`** — uuid of the project run.
+- **`total_tests`** — total number of tests in the project run.
+- **`tests_started`** — number of tests that were started.
 
 ## Example usage
 
