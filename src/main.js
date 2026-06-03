@@ -96,10 +96,15 @@ async function run_test_mode(common) {
  * @returns {Promise<void>} Resolves once outputs are set.
  */
 async function run_project_mode(common) {
-  const project_id = core.getInput('project_id', { required: true })
+  const project_id = core.getInput('project_id', { required: false })
+  const project_name = core.getInput('project_name', { required: false })
   const test_ids = id_list_input('test_ids')
 
-  let msg = `Running project '${project_id}'`
+  if (!project_id && !project_name) {
+    throw new Error("mode=project requires 'project_id' or 'project_name'")
+  }
+
+  let msg = `Running project '${project_id || project_name}'`
   if (test_ids.length) {
     msg += ` (tests ${test_ids.join(',')})`
   }
@@ -112,6 +117,7 @@ async function run_project_mode(common) {
     common.public_key,
     common.secret_key,
     project_id,
+    project_name,
     test_ids,
     common.report_mode,
     common.sf_environment,

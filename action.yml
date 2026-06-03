@@ -24,7 +24,10 @@ inputs:
     description: 'The destination to call, overriding the test configuration (mode=test)'
     required: false
   project_id:
-    description: 'The id of the project to run (required when mode=project)'
+    description: 'The id of the project to run (mode=project; takes precedence over project_name)'
+    required: false
+  project_name:
+    description: 'The name of the project to run (mode=project; used when project_id is not set)'
     required: false
   test_ids:
     description: 'Comma-separated subset of test ids to run (mode=project, optional)'

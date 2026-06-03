@@ -24803,10 +24803,15 @@ async function run_test_mode(common) {
  * @returns {Promise<void>} Resolves once outputs are set.
  */
 async function run_project_mode(common) {
-  const project_id = core.getInput('project_id', { required: true })
+  const project_id = core.getInput('project_id', { required: false })
+  const project_name = core.getInput('project_name', { required: false })
   const test_ids = id_list_input('test_ids')
 
-  let msg = `Running project '${project_id}'`
+  if (!project_id && !project_name) {
+    throw new Error("mode=project requires 'project_id' or 'project_name'")
+  }
+
+  let msg = `Running project '${project_id || project_name}'`
   if (test_ids.length) {
     msg += ` (tests ${test_ids.join(',')})`
   }
@@ -24819,6 +24824,7 @@ async function run_project_mode(common) {
     common.public_key,
     common.secret_key,
     project_id,
+    project_name,
     test_ids,
     common.report_mode,
     common.sf_environment,
@@ -25074,7 +25080,8 @@ async function run_call_test(
  *
  * @param {string} public_key The public API key for the Sipfront API.
  * @param {string} secret_key The secret API key for the Sipfront API.
- * @param {string} project_id The id of the project to run.
+ * @param {string} project_id The id of the project to run (takes precedence).
+ * @param {string} project_name The name of the project to run (used if no id).
  * @param {number[]} test_ids Optional subset of test ids to run.
  * @param {string} report_mode Optional report mode ('full' or 'kiosk').
  * @param {string} sf_environment Internal environment selector for testing.
@@ -25087,6 +25094,7 @@ async function run_project(
   public_key,
   secret_key,
   project_id,
+  project_name,
   test_ids,
   report_mode,
   sf_environment,
@@ -25096,8 +25104,12 @@ async function run_project(
   const api_base = api_base_for(sf_environment)
   const httpc = make_client(public_key, secret_key)
 
-  const data = {
-    id: Number(project_id)
+  // The API gives `id` precedence over `project.name` when both are present.
+  const data = {}
+  if (project_id && String(project_id).length > 0) {
+    data.id = Number(project_id)
+  } else if (project_name && project_name.length > 0) {
+    data['project.name'] = project_name
   }
   if (report_mode && report_mode.length > 0) {
     data['report.mode'] = report_mode

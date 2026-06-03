@@ -108,7 +108,14 @@ configuration.
 
 ### `project_id`
 
-**Required for `mode=project`** The id of the project to run.
+**Required for `mode=project`** (unless `project_name` is given) The id of the
+project to run. Takes precedence over `project_name` if both are set.
+
+### `project_name`
+
+**Optional (`mode=project`)** The name of the project to run, used when
+`project_id` is not set. Either `project_id` or `project_name` is required for
+`mode=project`.
 
 ### `test_ids`
 

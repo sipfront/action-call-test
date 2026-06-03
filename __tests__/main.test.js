@@ -180,12 +180,49 @@ describe('action', () => {
         'key',
         'secret',
         '42',
+        '',
         [1, 2, 3],
         '',
         'dev',
         3,
         1800
       )
+    })
+
+    it('runs a project by name when no id is given', async () => {
+      getInputMock.mockImplementation(name => {
+        if (name === 'project_id') return ''
+        if (name === 'project_name') return 'my-project'
+        return projectInputs[name] ?? ''
+      })
+      runProjectMock.mockResolvedValue(passedProjectRun)
+
+      await main.run()
+      expect(runProjectMock).toHaveBeenCalledWith(
+        'key',
+        'secret',
+        '',
+        'my-project',
+        [],
+        '',
+        'dev',
+        3,
+        1800
+      )
+      expect(setFailedMock).not.toHaveBeenCalled()
+    })
+
+    it('fails when neither project_id nor project_name is given', async () => {
+      getInputMock.mockImplementation(name => {
+        if (name === 'project_id') return ''
+        return projectInputs[name] ?? ''
+      })
+
+      await main.run()
+      expect(setFailedMock).toHaveBeenCalledWith(
+        "mode=project requires 'project_id' or 'project_name'"
+      )
+      expect(runProjectMock).not.toHaveBeenCalled()
     })
 
     it('fails the run when the project run failed', async () => {
