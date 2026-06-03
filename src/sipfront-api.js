@@ -1,32 +1,66 @@
+const core = require('@actions/core')
 const httpm = require('@actions/http-client')
 const httpm_auth = require('@actions/http-client/lib/auth')
 
 /**
+ * Resolve the API base URL for the given environment.
+ *
+ * @param {string} sf_environment One of 'dev', 'local' or empty for production.
+ * @returns {string} The base URL of the Sipfront API.
+ */
+function api_base_for(sf_environment) {
+  if (sf_environment && sf_environment.length > 0) {
+    if (sf_environment === 'dev') {
+      return 'https://app.dev.sipfront.com'
+    } else if (sf_environment === 'local') {
+      return 'http://localhost:8000'
+    }
+  }
+  return 'https://app.sipfront.com'
+}
+
+/**
+ * Extract a useful error message from a Sipfront API JSON response.
+ *
+ * @param {object} response The parsed response from postJson/getJson.
+ * @param {string} fallback Fallback message if no error field is present.
+ * @returns {string} The error message to surface to the user.
+ */
+function api_error_message(response, fallback) {
+  const body = response && response.result
+  if (body && typeof body === 'object') {
+    if (body.error) return body.error
+    if (body.description) return body.description
+  }
+  return fallback
+}
+
+/**
  * Run a Sipfront test and wait for completion.
  *
- * @param {public_key} The public API key for the Sipfront API
- * @param {secret_key} The secret API key for the Sipfront API
- * @param {name} The Sipfront test name to run
- * @param {destination} The destination number in the
- * @param {name} The Sipfront test name to run
- * @returns {Promise<string>} Resolves with 'done!' after the wait is over.
+ * @param {string} public_key The public API key for the Sipfront API.
+ * @param {string} secret_key The secret API key for the Sipfront API.
+ * @param {string} name The Sipfront test name to run.
+ * @param {string} destination Optional destination overriding the test config.
+ * @param {string} report_mode Optional report mode ('full', 'kiosk', 'print').
+ * @param {string} sf_environment Internal environment selector for testing.
+ * @param {number} poll_interval Seconds to wait between status polls.
+ * @param {number} timeout Maximum seconds to wait for the run to finish.
+ * @returns {Promise<object>} Resolves with the finished run object, augmented
+ *   with `report_url` from the dispatch response.
  */
 async function run_call_test(
   public_key,
   secret_key,
   name,
   destination,
-  sf_environment
+  report_mode,
+  sf_environment,
+  poll_interval,
+  timeout
 ) {
-  let api_base = 'https://app.sipfront.com'
+  const api_base = api_base_for(sf_environment)
   const api_path = '/api/v2/tests/run'
-  if (sf_environment !== null && sf_environment.length > 0) {
-    if (sf_environment === 'dev') {
-      api_base = 'https://app.dev.sipfront.com'
-    } else if (sf_environment === 'local') {
-      api_base = 'http://localhost:8000'
-    }
-  }
 
   const api_creds = new httpm_auth.BasicCredentialHandler(
     public_key,
@@ -41,26 +75,79 @@ async function run_call_test(
   const data = {
     'test.name': name
   }
-  if (destination !== null && destination.length > 0) {
+  if (destination && destination.length > 0) {
     data['step.1.0.dial_destination'] = destination
+  }
+  if (report_mode && report_mode.length > 0) {
+    data['report.mode'] = report_mode
   }
 
   const sf_res = await httpc.postJson(api_base + api_path, data)
-  console.log(sf_res)
+  core.debug(JSON.stringify(sf_res))
 
-  let res = null
-  do {
-    res = await httpc.getJson(sf_res.result.data.status_url)
-    console.log(res)
-    await new Promise(r => setTimeout(r, 3000))
-  } while (res.result.run.session_status === 'running')
-  if (res.result.run.session_status === 'failed') {
-    throw new Error(res.result.run.result_description)
+  if (sf_res.statusCode < 200 || sf_res.statusCode >= 300) {
+    throw new Error(
+      api_error_message(
+        sf_res,
+        `Failed to trigger test run (HTTP ${sf_res.statusCode})`
+      )
+    )
+  }
+  if (!sf_res.result || !sf_res.result.data || !sf_res.result.data.status_url) {
+    throw new Error(
+      api_error_message(
+        sf_res,
+        'Unexpected response from Sipfront API: missing status URL'
+      )
+    )
   }
 
-  return new Promise(resolve => {
-    resolve(res.result.run)
-  })
+  const status_url = sf_res.result.data.status_url
+  const report_url = sf_res.result.data.report_url
+
+  const interval_ms = poll_interval * 1000
+  const deadline = timeout > 0 ? Date.now() + timeout * 1000 : null
+
+  let run = null
+  do {
+    if (deadline !== null && Date.now() >= deadline) {
+      throw new Error(
+        `Timed out after ${timeout}s waiting for test session to finish`
+      )
+    }
+
+    const res = await httpc.getJson(status_url)
+    core.debug(JSON.stringify(res))
+
+    if (res.statusCode < 200 || res.statusCode >= 300) {
+      throw new Error(
+        api_error_message(
+          res,
+          `Failed to fetch test status (HTTP ${res.statusCode})`
+        )
+      )
+    }
+    if (!res.result || !res.result.run) {
+      throw new Error(
+        api_error_message(
+          res,
+          'Unexpected response from Sipfront API: missing run status'
+        )
+      )
+    }
+
+    run = res.result.run
+    if (run.session_status !== 'running') {
+      break
+    }
+
+    await new Promise(r => setTimeout(r, interval_ms))
+    // eslint-disable-next-line no-constant-condition
+  } while (true)
+
+  run.report_url = report_url
+
+  return run
 }
 
 module.exports = { run_call_test }

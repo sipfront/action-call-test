@@ -19,14 +19,49 @@ inputs:
   destination:
     description: 'The destination to call, overriding the test configuration'
     required: false
+  report_mode:
+    description: "Report rendering mode: 'full', 'kiosk' or 'print'"
+    required: false
+  poll_interval:
+    description: 'Seconds to wait between test status polls'
+    required: false
+    default: '3'
+  timeout:
+    description: 'Maximum seconds to wait for the test to finish (0 disables)'
+    required: false
+    default: '1800'
   sf_environment:
     description: 'Internal parameter for testing this action'
-    required: false    
+    required: false
 
 # Define your outputs here.
 outputs:
   session_id:
     description: 'The Sipfront session id used for the test run'
+  status:
+    description: "Final session status: 'passed', 'failed' or 'running'"
+  result_description:
+    description: 'Human-readable description of the test result'
+  report_url:
+    description: 'URL of the test session report'
+  test_id:
+    description: 'The id of the executed test'
+  test_name:
+    description: 'The name of the executed test'
+  project_id:
+    description: 'The id of the project the test belongs to'
+  project_name:
+    description: 'The name of the project the test belongs to'
+  testcase_name:
+    description: 'The name of the test case (scenario) that was executed'
+  agentpool_name:
+    description: 'The name of the agent pool that ran the test'
+  started_at:
+    description: 'Timestamp when the test session started (UTC)'
+  stopped_at:
+    description: 'Timestamp when the test session stopped (UTC)'
+  tags:
+    description: 'JSON-encoded tags associated with the test session'
 
 runs:
   using: node20

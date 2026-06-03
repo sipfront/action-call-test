@@ -1,21 +1,24 @@
 {
-  "name": "javascript-action",
-  "description": "GitHub Actions JavaScript Template",
-  "version": "0.0.0",
-  "author": "",
+  "name": "sipfront-action-call-test",
+  "description": "GitHub Action to trigger a Sipfront call test",
+  "version": "0.0.7",
+  "author": "Sipfront GmbH",
   "private": true,
-  "homepage": "https://github.com/actions/javascript-action#readme",
+  "homepage": "https://github.com/sipfront/action-call-test#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/actions/javascript-action.git"
+    "url": "git+https://github.com/sipfront/action-call-test.git"
   },
   "bugs": {
-    "url": "https://github.com/actions/javascript-action/issues"
+    "url": "https://github.com/sipfront/action-call-test/issues"
   },
   "keywords": [
     "GitHub",
     "Actions",
-    "JavaScript"
+    "Sipfront",
+    "SIP",
+    "telecom",
+    "testing"
   ],
   "exports": {
     ".": "./dist/index.js"

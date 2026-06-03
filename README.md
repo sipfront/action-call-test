@@ -46,10 +46,13 @@ jobs:
           secret_key: '${{ secrets.SIPFRONT_SECRET_KEY }}'
           name: 'basic-call-a-b'
 
-      # You can also print the test session id used in the call test
+      # You can also print the test session id and report URL of the run
       - name: Print Output
         id: output
-        run: echo "${{ steps.testcall.outputs.session_id }}"
+        run: |
+          echo "Session: ${{ steps.testcall.outputs.session_id }}"
+          echo "Status:  ${{ steps.testcall.outputs.status }}"
+          echo "Report:  ${{ steps.testcall.outputs.report_url }}"
 ```
 
 ## Inputs
@@ -72,11 +75,63 @@ jobs:
 
 **Optional** The destination to call, overriding the test configuration.
 
+### `report_mode`
+
+**Optional** Report rendering mode, one of `full`, `kiosk` or `print`.
+
+### `poll_interval`
+
+**Optional** Seconds to wait between test status polls. Defaults to `3`.
+
+### `timeout`
+
+**Optional** Maximum seconds to wait for the test to finish before the action
+fails. Set to `0` to disable. Defaults to `1800` (30 minutes).
+
 ## Outputs
+
+All outputs are populated once the run finishes, including for failed runs, so
+you can always link to the report.
 
 ### `session_id`
 
 The Sipfront test session ID of the executed test run.
+
+### `status`
+
+The final session status: `passed`, `failed` or `running`.
+
+### `result_description`
+
+A human-readable description of the test result.
+
+### `report_url`
+
+The URL of the test session report on the Sipfront App.
+
+### `test_id` / `test_name`
+
+The id and name of the executed test.
+
+### `project_id` / `project_name`
+
+The id and name of the project the test belongs to.
+
+### `testcase_name`
+
+The name of the test case (scenario) that was executed.
+
+### `agentpool_name`
+
+The name of the agent pool that ran the test.
+
+### `started_at` / `stopped_at`
+
+Timestamps (UTC) when the test session started and stopped.
+
+### `tags`
+
+JSON-encoded tags associated with the test session.
 
 ## Example usage
 
