@@ -88,5 +88,5 @@ outputs:
     description: 'Number of tests that were started in the project run'
 
 runs:
-  using: node20
+  using: node24
   main: dist/index.js
